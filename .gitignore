@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Payload generated types
+payload-types.ts
+
+# Media uploads (local disk; back these up separately in production)
+/media
+
+# Keep .env.example but not secrets
+!.env.example
