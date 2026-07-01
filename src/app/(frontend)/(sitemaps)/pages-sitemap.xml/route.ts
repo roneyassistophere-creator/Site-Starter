@@ -2,67 +2,54 @@ import { getServerSideSitemap } from 'next-sitemap'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
+import siteConfig from '@/config/site'
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+  siteConfig.url
 
 const getPagesSitemap = unstable_cache(
   async () => {
     const payload = await getPayload({ config })
-    const SITE_URL =
-      process.env.NEXT_PUBLIC_SERVER_URL ||
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-      'https://example.com'
+    const dateFallback = new Date().toISOString()
 
-    const results = await payload.find({
-      collection: 'pages',
+    // Query page-seo records for accurate lastmod dates
+    const seoRecords = await payload.find({
+      collection: 'page-seo',
       overrideAccess: false,
-      draft: false,
       depth: 0,
       limit: 1000,
       pagination: false,
-      where: {
-        _status: {
-          equals: 'published',
-        },
-      },
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
+      select: { pageSlug: true, updatedAt: true },
     })
 
-    const dateFallback = new Date().toISOString()
+    const lastmodBySlug: Record<string, string> = {}
+    for (const doc of seoRecords.docs) {
+      if (doc.pageSlug) lastmodBySlug[doc.pageSlug] = doc.updatedAt || dateFallback
+    }
 
-    const defaultSitemap = [
-      {
-        loc: `${SITE_URL}/search`,
-        lastmod: dateFallback,
-      },
-      {
-        loc: `${SITE_URL}/posts`,
-        lastmod: dateFallback,
-      },
+    const hardcodedPages = [
+      { slug: 'home', loc: `${SITE_URL}/`, priority: 1.0, changefreq: 'weekly' },
+      { slug: 'services', loc: `${SITE_URL}/services`, priority: 0.9, changefreq: 'monthly' },
+      { slug: 'about', loc: `${SITE_URL}/about`, priority: 0.8, changefreq: 'monthly' },
+      { slug: 'blog', loc: `${SITE_URL}/blog`, priority: 0.8, changefreq: 'daily' },
+      { slug: 'contact', loc: `${SITE_URL}/contact`, priority: 0.7, changefreq: 'yearly' },
+      { slug: 'search', loc: `${SITE_URL}/search`, priority: 0.3, changefreq: 'weekly' },
     ]
 
-    const sitemap = results.docs
-      ? results.docs
-          .filter((page) => Boolean(page?.slug))
-          .map((page) => {
-            return {
-              loc: page?.slug === 'home' ? `${SITE_URL}/` : `${SITE_URL}/${page?.slug}`,
-              lastmod: page.updatedAt || dateFallback,
-            }
-          })
-      : []
-
-    return [...defaultSitemap, ...sitemap]
+    return hardcodedPages.map(({ slug, loc, priority, changefreq }) => ({
+      loc,
+      lastmod: lastmodBySlug[slug] ?? dateFallback,
+      priority,
+      changefreq,
+    }))
   },
   ['pages-sitemap'],
-  {
-    tags: ['pages-sitemap'],
-  },
+  { tags: ['pages-sitemap'] },
 )
 
 export async function GET() {
   const sitemap = await getPagesSitemap()
-
   return getServerSideSitemap(sitemap)
 }

@@ -1,5 +1,7 @@
 import clsx from 'clsx'
+import Image from 'next/image'
 import React from 'react'
+import siteConfig from '@/config/site'
 
 interface Props {
   className?: string
@@ -7,23 +9,33 @@ interface Props {
   priority?: 'auto' | 'high' | 'low'
 }
 
-export const Logo = (props: Props) => {
-  const { loading: loadingFromProps, priority: priorityFromProps, className } = props
+export const Logo = ({ className, loading, priority }: Props) => {
+  const { logo, name } = siteConfig
 
-  const loading = loadingFromProps || 'lazy'
-  const priority = priorityFromProps || 'low'
+  if (logo.imagePath) {
+    return (
+      <Image
+        alt={name}
+        src={logo.imagePath}
+        width={160}
+        height={36}
+        loading={loading ?? 'lazy'}
+        fetchPriority={priority ?? 'low'}
+        className={clsx('h-9 w-auto', className)}
+      />
+    )
+  }
 
+  // Text logo fallback — styled to look sharp in both light and dark modes
   return (
-    /* eslint-disable @next/next/no-img-element */
-    <img
-      alt="Payload Logo"
-      width={193}
-      height={34}
-      loading={loading}
-      fetchPriority={priority}
-      decoding="async"
-      className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
-      src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg"
-    />
+    <span
+      className={clsx(
+        'font-bold text-xl tracking-tight leading-none select-none',
+        className,
+      )}
+      aria-label={name}
+    >
+      {logo.text ?? name}
+    </span>
   )
 }

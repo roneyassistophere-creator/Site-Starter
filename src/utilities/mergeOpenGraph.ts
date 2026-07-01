@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
 import { getServerSideURL } from './getURL'
+import siteConfig from '@/config/site'
 
 const defaultOpenGraph: Metadata['openGraph'] = {
   type: 'website',
-  description: 'An open-source website built with Payload and Next.js.',
+  description: siteConfig.seo.defaultDescription,
   images: [
     {
-      url: `${getServerSideURL()}/website-template-OG.webp`,
+      url: `${getServerSideURL()}${siteConfig.seo.defaultOgImage}`,
     },
   ],
-  siteName: 'Payload Website Template',
-  title: 'Payload Website Template',
+  siteName: siteConfig.name,
+  title: siteConfig.seo.defaultTitle,
 }
 
 export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {

@@ -15,17 +15,13 @@ import { getClientSideURL } from '@/utilities/getURL'
 const baseClass = 'admin-bar'
 
 const collectionLabels = {
-  pages: {
-    plural: 'Pages',
-    singular: 'Page',
+  'page-seo': {
+    plural: 'Page SEOs',
+    singular: 'Page SEO',
   },
   posts: {
     plural: 'Posts',
     singular: 'Post',
-  },
-  projects: {
-    plural: 'Projects',
-    singular: 'Project',
   },
 }
 
@@ -38,7 +34,7 @@ export const AdminBar: React.FC<{
   const segments = useSelectedLayoutSegments()
   const [show, setShow] = useState(false)
   const collection = (
-    collectionLabels[segments?.[1] as keyof typeof collectionLabels] ? segments[1] : 'pages'
+    collectionLabels[segments?.[1] as keyof typeof collectionLabels] ? segments[1] : 'posts'
   ) as keyof typeof collectionLabels
   const router = useRouter()
 

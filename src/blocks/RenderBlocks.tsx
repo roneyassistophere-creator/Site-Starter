@@ -1,12 +1,27 @@
 import React, { Fragment } from 'react'
 
-import type { Page } from '@/payload-types'
+import type {
+  BannerBlock as BannerBlockProps,
+  CallToActionBlock as CTABlockProps,
+  ContentBlock as ContentBlockProps,
+  MediaBlock as MediaBlockProps,
+  ArchiveBlock as ArchiveBlockProps,
+  FormBlock as FormBlockProps,
+  CodeBlock as CodeBlockProps,
+} from '@/payload-types'
 
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+
+type Block =
+  | ({ blockType: 'archive' } & ArchiveBlockProps)
+  | ({ blockType: 'content' } & ContentBlockProps)
+  | ({ blockType: 'cta' } & CTABlockProps)
+  | ({ blockType: 'formBlock' } & FormBlockProps)
+  | ({ blockType: 'mediaBlock' } & MediaBlockProps)
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -17,7 +32,7 @@ const blockComponents = {
 }
 
 export const RenderBlocks: React.FC<{
-  blocks: Page['layout'][0][]
+  blocks: Block[]
 }> = (props) => {
   const { blocks } = props
 
