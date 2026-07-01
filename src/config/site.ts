@@ -1,12 +1,28 @@
+import { Home, Layers, Users, BookOpen, Mail } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+export type NavGrandchild = {
+  label: string
+  href: string
+}
+
+export type NavChild = {
+  label: string
+  href: string
+  children?: NavGrandchild[]
+}
+
 export type NavLink = {
   label: string
   href: string
   external?: boolean
+  icon?: LucideIcon
+  children?: NavChild[]
 }
 
 export type FooterLinkGroup = {
   heading: string
-  links: NavLink[]
+  links: { label: string; href: string }[]
 }
 
 export type SocialLink = {
@@ -57,15 +73,12 @@ const siteConfig: SiteConfig = {
   url: process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000',
 
   // ─── Logo ──────────────────────────────────────────────────────────────────
-  // Set imagePath to use an image logo (e.g. '/logo.svg').
-  // If imagePath is omitted the site name text is used as the logo.
   logo: {
     text: 'Acme Agency',
     // imagePath: '/logo.svg',
   },
 
   // ─── SEO defaults ──────────────────────────────────────────────────────────
-  // These are fallbacks. Per-page overrides come from the admin → Page SEO collection.
   seo: {
     titleTemplate: '%s | Acme Agency',
     defaultTitle: 'Acme Agency — Digital Marketing & Web Design',
@@ -73,17 +86,68 @@ const siteConfig: SiteConfig = {
       'Acme Agency delivers world-class SEO, web design, and paid advertising for modern businesses.',
     defaultOgImage: '/og-default.png',
     twitterHandle: '@acme',
-    // Set these via environment variables or fill them in directly.
     googleVerification: process.env.GOOGLE_SITE_VERIFICATION ?? '',
     bingVerification: process.env.BING_SITE_VERIFICATION ?? '',
   },
 
   // ─── Navigation ────────────────────────────────────────────────────────────
   nav: [
-    { label: 'Services', href: '/services' },
-    { label: 'About', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Home', href: '/', icon: Home },
+    {
+      label: 'Services',
+      href: '/services',
+      icon: Layers,
+      children: [
+        {
+          label: 'Service 1',
+          href: '/services/service-1',
+          children: [
+            { label: 'Sub Service 1', href: '/services/service-1/sub-service-1' },
+            { label: 'Sub Service 2', href: '/services/service-1/sub-service-2' },
+            { label: 'Sub Service 3', href: '/services/service-1/sub-service-3' },
+          ],
+        },
+        {
+          label: 'Service 2',
+          href: '/services/service-2',
+          children: [
+            { label: 'Sub Service 1', href: '/services/service-2/sub-service-1' },
+            { label: 'Sub Service 2', href: '/services/service-2/sub-service-2' },
+            { label: 'Sub Service 3', href: '/services/service-2/sub-service-3' },
+          ],
+        },
+        {
+          label: 'Service 3',
+          href: '/services/service-3',
+          children: [
+            { label: 'Sub Service 1', href: '/services/service-3/sub-service-1' },
+            { label: 'Sub Service 2', href: '/services/service-3/sub-service-2' },
+            { label: 'Sub Service 3', href: '/services/service-3/sub-service-3' },
+          ],
+        },
+        {
+          label: 'Service 4',
+          href: '/services/service-4',
+          children: [
+            { label: 'Sub Service 1', href: '/services/service-4/sub-service-1' },
+            { label: 'Sub Service 2', href: '/services/service-4/sub-service-2' },
+            { label: 'Sub Service 3', href: '/services/service-4/sub-service-3' },
+          ],
+        },
+        {
+          label: 'Service 5',
+          href: '/services/service-5',
+          children: [
+            { label: 'Sub Service 1', href: '/services/service-5/sub-service-1' },
+            { label: 'Sub Service 2', href: '/services/service-5/sub-service-2' },
+            { label: 'Sub Service 3', href: '/services/service-5/sub-service-3' },
+          ],
+        },
+      ],
+    },
+    { label: 'About', href: '/about', icon: Users },
+    { label: 'Blog', href: '/blog', icon: BookOpen },
+    { label: 'Contact', href: '/contact', icon: Mail },
   ],
 
   // ─── Footer links ──────────────────────────────────────────────────────────
@@ -93,6 +157,7 @@ const siteConfig: SiteConfig = {
       links: [
         { label: 'About', href: '/about' },
         { label: 'Services', href: '/services' },
+        { label: 'Careers', href: '/careers' },
         { label: 'Contact', href: '/contact' },
       ],
     },

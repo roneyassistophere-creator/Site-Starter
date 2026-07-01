@@ -1,14 +1,14 @@
 import type { Metadata } from 'next/types'
-
-import { CollectionArchive } from '@/components/CollectionArchive'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
+import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
-import PageClient from './page.client'
-import { notFound } from 'next/navigation'
+import PageClient from '../../page.client'
 import siteConfig from '@/config/site'
+import { BlogCard } from '../../components/BlogCard'
+import { BlogLayout } from '../../components/BlogLayout'
+import { Pagination } from '@/components/Pagination'
+import type { Category } from '@/payload-types'
 
 export const revalidate = 600
 
@@ -16,46 +16,75 @@ type Args = {
   params: Promise<{ pageNumber: string }>
 }
 
+const LIMIT = 9
+
 export default async function BlogPaginatedPage({ params: paramsPromise }: Args) {
   const { pageNumber } = await paramsPromise
+  const sanitizedPageNumber = Number(pageNumber)
+  if (!Number.isInteger(sanitizedPageNumber) || sanitizedPageNumber < 2) notFound()
+
   const payload = await getPayload({ config: configPromise })
 
-  const sanitizedPageNumber = Number(pageNumber)
-  if (!Number.isInteger(sanitizedPageNumber)) notFound()
+  const [postsResult, categoriesResult] = await Promise.all([
+    payload.find({
+      collection: 'posts',
+      depth: 1,
+      limit: LIMIT,
+      page: sanitizedPageNumber,
+      overrideAccess: false,
+      sort: '-publishedAt',
+      select: {
+        title: true,
+        slug: true,
+        categories: true,
+        meta: true,
+        publishedAt: true,
+      },
+    }),
+    payload.find({
+      collection: 'categories',
+      depth: 1,
+      limit: 100,
+      overrideAccess: false,
+      pagination: false,
+    }),
+  ])
 
-  const posts = await payload.find({
-    collection: 'posts',
-    depth: 1,
-    limit: 12,
-    page: sanitizedPageNumber,
-    overrideAccess: false,
-  })
+  const categories = categoriesResult.docs as unknown as Category[]
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="pb-24">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1>Blog</h1>
+
+      {/* Header */}
+      <div className="bg-card border-b border-border">
+        <div className="container py-14">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+            Our Blog
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+            Ideas, stories &amp; insights
+          </h1>
+          <p className="text-sm text-muted-foreground">Page {sanitizedPageNumber}</p>
         </div>
       </div>
 
-      <div className="container mb-8">
-        <PageRange
-          collection="posts"
-          currentPage={posts.page}
-          limit={12}
-          totalDocs={posts.totalDocs}
-        />
-      </div>
+      {/* Sidebar + grid */}
+      <BlogLayout categories={categories} activeCategorySlug={null}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          {postsResult.docs.map((post) => (
+            <BlogCard key={post.id} doc={post as any} />
+          ))}
+        </div>
 
-      <CollectionArchive posts={posts.docs} relationTo="blog" />
-
-      <div className="container">
-        {posts?.page && posts?.totalPages > 1 && (
-          <Pagination page={posts.page} totalPages={posts.totalPages} basePath="/blog/page" />
+        {postsResult.totalPages > 1 && postsResult.page && (
+          <Pagination
+            page={postsResult.page}
+            totalPages={postsResult.totalPages}
+            basePath="/blog/page"
+          />
         )}
-      </div>
+      </BlogLayout>
     </div>
   )
 }
@@ -76,10 +105,8 @@ export async function generateStaticParams() {
     overrideAccess: false,
   })
 
-  const totalPages = Math.ceil(totalDocs / 12)
-  const pages: { pageNumber: string }[] = []
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) })
-  }
-  return pages
+  const totalPages = Math.ceil(totalDocs / LIMIT)
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
+    pageNumber: String(i + 2),
+  }))
 }
