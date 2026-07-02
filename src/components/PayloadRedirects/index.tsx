@@ -30,7 +30,7 @@ export const PayloadRedirects: React.FC<Props> = async ({ disableNotFound, url }
     const relationTo = redirectItem.to?.reference?.relationTo ?? ''
     const prefix = collectionPathPrefix[relationTo] ?? `/${relationTo}`
 
-    if (typeof redirectItem.to?.reference?.value === 'string') {
+    if (relationTo && typeof redirectItem.to?.reference?.value === 'string') {
       const id = redirectItem.to.reference.value
       const document = (await getCachedDocument(relationTo, id)()) as Post
       redirectUrl = `${prefix}/${document?.slug}`

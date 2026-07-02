@@ -54,6 +54,7 @@ export const plugins: Plugin[] = [
   }),
   seoPlugin({
     collections: ['posts'],
+    uploadsCollection: 'media',
     generateTitle,
     generateURL,
   }),
