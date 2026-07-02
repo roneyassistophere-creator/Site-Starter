@@ -18,17 +18,20 @@ import { jsonLdScript, articleSchema, breadcrumbSchema } from '@/utilities/jsonl
 import siteConfig from '@/config/site'
 
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const posts = await payload.find({
-    collection: 'posts',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: { slug: true },
-  })
-
-  return posts.docs.map(({ slug }) => ({ slug }))
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const posts = await payload.find({
+      collection: 'posts',
+      draft: false,
+      limit: 1000,
+      overrideAccess: false,
+      pagination: false,
+      select: { slug: true },
+    })
+    return posts.docs.map(({ slug }) => ({ slug }))
+  } catch {
+    return []
+  }
 }
 
 type Args = {
@@ -62,8 +65,8 @@ export default async function BlogPostPage({ params: paramsPromise }: Args) {
               datePublished: post.publishedAt ?? post.createdAt,
               dateModified: post.updatedAt,
               authorNames: post.populatedAuthors?.map((a) => (typeof a === 'object' ? a.name ?? '' : '')).filter(Boolean),
-              imageUrl: typeof post.meta?.image === 'object' && post.meta?.image?.url
-                ? `${siteConfig.url}${post.meta.image.url}`
+              imageUrl: typeof (post.meta as any)?.image === 'object' && (post.meta as any)?.image?.url
+                ? ((post.meta as any).image.url.startsWith('http') ? (post.meta as any).image.url : `${siteConfig.url}${(post.meta as any).image.url}`)
                 : undefined,
               url: `${siteConfig.url}/blog/${post.slug}`,
               publisherName: siteConfig.name,

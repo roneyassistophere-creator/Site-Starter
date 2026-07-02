@@ -1,4 +1,4 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -35,9 +35,9 @@ export default buildConfig({
     },
   },
   editor: defaultLexical,
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./payload.db',
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/payload',
     },
   }),
   collections: [PageSEO, Posts, Media, Categories, Users],

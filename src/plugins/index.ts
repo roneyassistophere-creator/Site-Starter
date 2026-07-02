@@ -3,6 +3,7 @@ import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { searchPlugin } from '@payloadcms/plugin-search'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
@@ -91,4 +92,31 @@ export const plugins: Plugin[] = [
       },
     },
   }),
+
+  // Cloudflare R2 storage — active only when S3_BUCKET is set.
+  // Falls back to local storage for local development without R2 credentials.
+  ...(process.env.S3_BUCKET
+    ? [
+        s3Storage({
+          collections: {
+            media: {
+              prefix: 'media',
+              generateFileURL: ({ filename, prefix }) => {
+                const base = (process.env.S3_PUBLIC_URL || '').replace(/\/$/, '')
+                return `${base}/${prefix ? `${prefix}/` : ''}${filename}`
+              },
+            },
+          },
+          bucket: process.env.S3_BUCKET,
+          config: {
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+            },
+            region: 'auto',
+            endpoint: process.env.S3_ENDPOINT || '',
+          },
+        }),
+      ]
+    : []),
 ]

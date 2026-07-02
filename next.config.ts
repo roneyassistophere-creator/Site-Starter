@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
           protocol: url.protocol.replace(':', '') as 'http' | 'https',
         }
       }),
+      // Cloudflare R2 public buckets (*.r2.dev)
+      { hostname: '*.r2.dev', protocol: 'https' as const },
+      // Custom R2 domain — set S3_CDN_HOSTNAME if you point a custom domain at R2
+      ...(process.env.S3_CDN_HOSTNAME
+        ? [{ hostname: process.env.S3_CDN_HOSTNAME, protocol: 'https' as const }]
+        : []),
     ],
   },
   webpack: (webpackConfig) => {

@@ -11,7 +11,7 @@ import { BlogFilterButton } from '../../components/BlogFilterButton'
 import { Pagination } from '@/components/Pagination'
 import type { Category } from '@/payload-types'
 
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
 type Args = {
   params: Promise<{ slug: string[] }>
@@ -146,16 +146,3 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   }
 }
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const categories = await payload.find({
-    collection: 'categories',
-    limit: 200,
-    overrideAccess: false,
-    pagination: false,
-  })
-
-  return categories.docs.map((cat) => ({
-    slug: [cat.slug],
-  }))
-}

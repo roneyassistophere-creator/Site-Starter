@@ -1,8 +1,6 @@
 import type { SiteConfig } from '@/config/site'
-import type { Post } from '@/payload-types'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
-// Minimal typed wrappers — avoids a heavy schema.org dependency.
 
 type WithContext<T> = T & { '@context': 'https://schema.org'; '@type': string }
 
@@ -34,7 +32,6 @@ type WebPageSchema = WithContext<{
   url: string
   image?: string
   isPartOf?: { '@type': 'WebSite'; url: string }
-  breadcrumb?: object
 }>
 
 type ArticleSchema = WithContext<{
@@ -44,7 +41,7 @@ type ArticleSchema = WithContext<{
   url: string
   datePublished?: string
   dateModified?: string
-  author?: { '@type': 'Person'; name: string }
+  author?: { '@type': 'Person'; name: string }[]
   publisher?: { '@type': 'Organization'; name: string; logo?: object }
 }>
 
@@ -96,20 +93,21 @@ export function websiteSchema(config: SiteConfig): WebSiteSchema {
 }
 
 export function webPageSchema(args: {
-  title: string
+  name: string
   description?: string
   url: string
   image?: string
-  siteUrl: string
+  siteUrl?: string
+  type?: string
 }): WebPageSchema {
   return {
     '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: args.title,
+    '@type': args.type ?? 'WebPage',
+    name: args.name,
     description: args.description,
     url: args.url,
     image: args.image,
-    isPartOf: { '@type': 'WebSite', url: args.siteUrl },
+    ...(args.siteUrl ? { isPartOf: { '@type': 'WebSite', url: args.siteUrl } } : {}),
   }
 }
 
@@ -119,7 +117,7 @@ export function servicePageSchema(args: {
   url: string
   providerName: string
   siteUrl: string
-}): WithContext<object> {
+}): WithContext<Record<string, unknown>> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -135,29 +133,34 @@ export function servicePageSchema(args: {
 }
 
 export function articleSchema(args: {
-  post: Partial<Post>
-  authorName?: string
+  title: string
+  description?: string
+  datePublished?: string
+  dateModified?: string
+  authorNames?: string[]
   imageUrl?: string
-  siteUrl: string
-  siteName: string
+  url: string
+  publisherName: string
+  publisherUrl: string
 }): ArticleSchema {
-  const { post, authorName, imageUrl, siteUrl, siteName } = args
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: post.title ?? '',
-    description: post.meta?.description ?? undefined,
-    image: imageUrl,
-    url: `${siteUrl}/blog/${post.slug}`,
-    datePublished: post.createdAt ?? undefined,
-    dateModified: post.updatedAt ?? undefined,
-    author: authorName ? { '@type': 'Person', name: authorName } : undefined,
+    headline: args.title,
+    description: args.description,
+    image: args.imageUrl,
+    url: args.url,
+    datePublished: args.datePublished,
+    dateModified: args.dateModified,
+    author: args.authorNames?.length
+      ? args.authorNames.map((name) => ({ '@type': 'Person' as const, name }))
+      : undefined,
     publisher: {
       '@type': 'Organization',
-      name: siteName,
+      name: args.publisherName,
       logo: {
         '@type': 'ImageObject',
-        url: `${siteUrl}/favicon.svg`,
+        url: `${args.publisherUrl}/favicon.svg`,
       },
     },
   }

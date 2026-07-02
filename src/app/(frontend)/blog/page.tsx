@@ -12,10 +12,10 @@ import { BlogCard } from './components/BlogCard'
 import { BlogLayout } from './components/BlogLayout'
 import { BlogFilterButton } from './components/BlogFilterButton'
 import { Pagination } from '@/components/Pagination'
+import { jsonLdScript, webPageSchema, breadcrumbSchema } from '@/utilities/jsonld'
 import type { Category } from '@/payload-types'
 
-export const dynamic = 'force-static'
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
 const LIMIT = 9
 
@@ -55,6 +55,20 @@ export default async function BlogPage() {
   return (
     <div className="pb-24">
       <PageClient />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript([
+            webPageSchema({
+              name: `Blog | ${siteConfig.name}`,
+              description: `Read the latest articles, insights and updates from ${siteConfig.name}.`,
+              url: `${siteConfig.url}/blog`,
+            }),
+            breadcrumbSchema([{ name: 'Home', href: '/' }, { name: 'Blog', href: '/blog' }]),
+          ]),
+        }}
+      />
 
       {/* ── Mobile filter strip — before hero ─────────────────────────── */}
       {categories.length > 0 && (
@@ -178,8 +192,18 @@ export default async function BlogPage() {
 }
 
 export function generateMetadata(): Metadata {
+  const title = `Blog | ${siteConfig.name}`
+  const description = `Read the latest articles, insights and updates from ${siteConfig.name}.`
+  const url = `${siteConfig.url}/blog`
   return {
-    title: 'Blog',
-    description: `Read the latest articles from ${siteConfig.name}.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+    },
   }
 }

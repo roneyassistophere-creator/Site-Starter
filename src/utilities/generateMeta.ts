@@ -12,7 +12,10 @@ const getImageURL = (image?: Media | Config['db']['defaultIDType'] | null): stri
 
   if (image && typeof image === 'object' && 'url' in image) {
     const ogUrl = (image as Media).sizes?.og?.url
-    return ogUrl ? serverUrl + ogUrl : serverUrl + (image as Media).url!
+    const rawUrl = ogUrl || (image as Media).url
+    if (!rawUrl) return fallback
+    // R2/CDN URLs are already absolute — don't prepend serverUrl
+    return rawUrl.startsWith('http') ? rawUrl : serverUrl + rawUrl
   }
 
   return fallback
@@ -30,7 +33,7 @@ export const generatePostMeta = async (args: {
 }): Promise<Metadata> => {
   const { doc } = args
 
-  const ogImage = getImageURL(doc?.meta?.image)
+  const ogImage = getImageURL((doc?.meta as any)?.image)
   const title = buildTitle(doc?.meta?.title)
   const description = doc?.meta?.description ?? siteConfig.seo.defaultDescription
   const url = doc?.slug ? `${getServerSideURL()}/blog/${doc.slug}` : getServerSideURL()

@@ -31,7 +31,7 @@ const getPostsSitemap = unstable_cache(
         loc: `${SITE_URL}/blog/${post.slug}`,
         lastmod: post.updatedAt || dateFallback,
         priority: 0.7,
-        changefreq: 'weekly',
+        changefreq: 'weekly' as const,
       }))
   },
   ['posts-sitemap'],

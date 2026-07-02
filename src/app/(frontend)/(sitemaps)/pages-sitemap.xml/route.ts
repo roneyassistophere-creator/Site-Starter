@@ -29,11 +29,14 @@ const getPagesSitemap = unstable_cache(
       if (doc.pageSlug) lastmodBySlug[doc.pageSlug] = doc.updatedAt || dateFallback
     }
 
-    const hardcodedPages = [
+    type Changefreq = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
+
+    const hardcodedPages: { slug: string; loc: string; priority: number; changefreq: Changefreq }[] = [
       { slug: 'home', loc: `${SITE_URL}/`, priority: 1.0, changefreq: 'weekly' },
       { slug: 'services', loc: `${SITE_URL}/services`, priority: 0.9, changefreq: 'monthly' },
       { slug: 'about', loc: `${SITE_URL}/about`, priority: 0.8, changefreq: 'monthly' },
       { slug: 'blog', loc: `${SITE_URL}/blog`, priority: 0.8, changefreq: 'daily' },
+      { slug: 'careers', loc: `${SITE_URL}/careers`, priority: 0.6, changefreq: 'monthly' },
       { slug: 'contact', loc: `${SITE_URL}/contact`, priority: 0.7, changefreq: 'yearly' },
       { slug: 'search', loc: `${SITE_URL}/search`, priority: 0.3, changefreq: 'weekly' },
     ]

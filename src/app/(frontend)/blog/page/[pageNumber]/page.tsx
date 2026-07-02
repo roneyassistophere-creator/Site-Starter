@@ -10,7 +10,7 @@ import { BlogLayout } from '../../components/BlogLayout'
 import { Pagination } from '@/components/Pagination'
 import type { Category } from '@/payload-types'
 
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
 type Args = {
   params: Promise<{ pageNumber: string }>
@@ -98,15 +98,3 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   }
 }
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const { totalDocs } = await payload.count({
-    collection: 'posts',
-    overrideAccess: false,
-  })
-
-  const totalPages = Math.ceil(totalDocs / LIMIT)
-  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
-    pageNumber: String(i + 2),
-  }))
-}

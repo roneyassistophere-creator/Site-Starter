@@ -84,7 +84,7 @@ const siteConfig: SiteConfig = {
     defaultTitle: 'Acme Agency — Digital Marketing & Web Design',
     defaultDescription:
       'Acme Agency delivers world-class SEO, web design, and paid advertising for modern businesses.',
-    defaultOgImage: '/og-default.png',
+    defaultOgImage: '/website-template-OG.webp',
     twitterHandle: '@acme',
     googleVerification: process.env.GOOGLE_SITE_VERIFICATION ?? '',
     bingVerification: process.env.BING_SITE_VERIFICATION ?? '',

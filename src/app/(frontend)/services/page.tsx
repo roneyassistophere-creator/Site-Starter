@@ -11,7 +11,7 @@ export const dynamic = 'force-static'
 export const revalidate = 3600
 
 export async function generateMetadata(): Promise<Metadata> {
-  const seoDoc = await getPageSEO('services')
+  const seoDoc = await getPageSEO('services').catch(() => null)
   return generatePageMeta({ slug: 'services', seoDoc, fallbackTitle: 'Services' })
 }
 
@@ -61,7 +61,7 @@ const services = [
 ]
 
 export default async function ServicesPage() {
-  const seoDoc = await getPageSEO('services')
+  const seoDoc = await getPageSEO('services').catch(() => null)
 
   return (
     <>
